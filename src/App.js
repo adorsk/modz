@@ -1,20 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
+import Program from './Program'
+
 
 class App extends React.Component {
   _setState (updates) {
     this.props.dispatch({type: 'setAppState', payload: updates})
   }
 
-  render() {
+  render () {
     return (
       <div>
-        <input
-          value={this.props.someProp}
-          onChange={(e) => this._setState({someProp: e.target.value})}
-        />
-        <div>someProp: {this.props.someProp}</div>
+        <Program program={this.props.currentProgram} />
       </div>
     )
   }
