@@ -40,14 +40,17 @@ const initialState = {
         outputs: {},
       },
     },
-    links: {
+    wires: {
       'mod.1::mod.2': {
+        key: 'mod.1::mod.2',
         src: {
           modKey: 'mod.1',
+          ioType: 'output',
           ioKey: 'output.1',
         },
         dest: {
           modKey: 'mod.2',
+          ioType: 'input',
           ioKey: 'input.1',
         }
       }

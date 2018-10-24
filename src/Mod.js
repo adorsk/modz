@@ -93,8 +93,18 @@ class Mod extends React.Component {
   }
 
   componentDidMount () {
+    if (this.props.afterMount) { this.props.afterMount(this) }
     // call mod's setupInterface method.
     // init mod? (I think no...bc that's affecting program state)
+  }
+
+  componentWillUnmount () {
+    if (this.props.beforeUnmount) {this.props.beforeUnmount(this)}
+  }
+
+  getIoHandlePosition ({ioType, ioKey}) {
+    // @TK
+    return {x: 500 * Math.random(), y: 500 *Math.random()}
   }
 }
 

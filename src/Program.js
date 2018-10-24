@@ -1,9 +1,17 @@
 import React from 'react'
+import _ from 'lodash'
 
 import Mod from './Mod.js'
+import Wire from './Wire.js'
 
 
 class Program extends React.Component {
+  constructor (props) {
+    super(props)
+    this.modRefs = {}
+    this.wireRefs = {}
+  }
+
   render () {
     const { program } = this.props
     return (
@@ -13,6 +21,7 @@ class Program extends React.Component {
           style={{position: 'relative'}}
         >
           {this.renderMods({mods: program.mods})}
+          {this.renderWires({wires: program.wires})}
         </div>
       </div>
     )
@@ -25,8 +34,8 @@ class Program extends React.Component {
         style={{position: 'absolute'}}
       >
         {
-          Object.keys(mods).map((modKey) => {
-            return this.renderMod({mod: mods[modKey]})
+          _.map(mods, (mod) => {
+            return this.renderMod({mod})
           })
         }
       </div>
@@ -43,8 +52,67 @@ class Program extends React.Component {
           left: mod.position.x,
           top: mod.position.y,
         }}
+        afterMount={(el) => this.modRefs[mod.key] = el}
+        beforeUnmount={() => delete this.modRefs[mod.key]}
       />
     )
+  }
+
+  renderWires ({wires}) {
+    return (
+      <svg
+        className='wires-container'
+        style={{position: 'absolute'}}
+      >
+        {
+          _.map(wires, (wire) => {
+            return this.renderWire({wire})
+          })
+        }
+      </svg>
+    )
+  }
+
+  renderWire ({wire}) {
+    return (
+      <Wire
+        key={wire.key}
+        afterMount={(el) => this.wireRefs[wire.key] = el}
+        beforeUnmount={() => delete this.wireRefs[wire.key]}
+      />
+    )
+  }
+
+  componentDidMount () {
+    this.updateWires()
+  }
+
+  componentDidUpdate () {
+    this.updateWires()
+  }
+
+  updateWires () {
+    _.each(this.props.program.wires, (wire) => {
+      const { src, dest } = wire
+      const srcMod = this.modRefs[src.modKey]
+      const srcHandlePos = srcMod.getIoHandlePosition({
+        ioType: src.ioType,
+        ioKey: src.ioKey
+      })
+      const destMod = this.modRefs[dest.modKey]
+      const destHandlePos = destMod.getIoHandlePosition({
+        ioType: dest.ioType,
+        ioKey: dest.ioKey
+      })
+      const wireRef = this.wireRefs[wire.key]
+      wireRef.setPositions({
+        src: srcHandlePos,
+        dest: destHandlePos,
+      })
+    })
+  }
+
+  getIoHandlePosition () {
   }
 }
 
