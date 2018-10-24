@@ -15,7 +15,7 @@ const initialState = {
         inputs: {},
         outputs: {
           'output.1': {
-            key: '1',
+            key: 'output.1',
             position: 0,
           }
         },
@@ -33,7 +33,7 @@ const initialState = {
         },
         inputs: {
           'input.1': {
-            key: '1',
+            key: 'input.1',
             position: 0,
           }
         },

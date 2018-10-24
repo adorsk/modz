@@ -1,7 +1,14 @@
 import React from 'react'
 import _ from 'lodash'
 
+import IoHandle from './IoHandle.js'
+
 class Mod extends React.Component {
+  constructor (props) {
+    super(props)
+    this.ioHandleRefs = {}
+  }
+
   render () {
     const { mod, style } = this.props
     return (
@@ -49,41 +56,49 @@ class Mod extends React.Component {
   }
 
   renderInputHandles () {
+    return this.renderIoHandleGroup({
+      groupType: 'input',
+      ioDefs: this.props.mod.inputs,
+    })
+  }
+
+  renderIoHandleGroup ({groupType, ioDefs}) {
     return (
-      <div className='input-handles'>
+      <div className={`io-handles ${groupType}-handles`}>
         {
-          _.sortBy(this.props.mod.inputs, 'position')
+          _.sortBy(ioDefs, 'position')
             .map((ioDef) => {
-              return this.renderInputHandle({ioDef})
+              return this.renderIoHandle({
+                ioDef,
+                ioType: groupType
+              })
             })
         }
       </div>
     )
   }
 
-  renderInputHandle ({ioDef}) {
+  renderIoHandle ({ioDef, ioType}) {
     return (
-      <div key={ioDef.key}>{JSON.stringify(ioDef)}</div>
+      <IoHandle
+        key={ioDef.key}
+        ioDef={ioDef}
+        ioType={ioType}
+        afterMount={(el) => {
+          this.ioHandleRefs[ioDef.key] = el
+        }}
+        beforeUnmount={(el) => {
+          delete this.ioHandleRefs[ioDef.key]
+        }}
+      />
     )
   }
 
   renderOutputHandles () {
-    return (
-      <div className='output-handles'>
-        {
-          _.sortBy(this.props.mod.outputs, 'position')
-            .map((ioDef) => {
-              return this.renderOutputHandle({ioDef})
-            })
-        }
-      </div>
-    )
-  }
-
-  renderOutputHandle ({ioDef}) {
-    return (
-      <div key={ioDef.key}>{JSON.stringify(ioDef)}</div>
-    )
+    return this.renderIoHandleGroup({
+      groupType: 'output',
+      ioDefs: this.props.mod.outputs,
+    })
   }
 
   renderModInterface () {
@@ -99,12 +114,11 @@ class Mod extends React.Component {
   }
 
   componentWillUnmount () {
-    if (this.props.beforeUnmount) {this.props.beforeUnmount(this)}
+    if (this.props.beforeUnmount) { this.props.beforeUnmount(this) }
   }
 
   getIoHandlePosition ({ioType, ioKey}) {
-    // @TK
-    return {x: 500 * Math.random(), y: 500 *Math.random()}
+    return this.ioHandleRefs[ioKey].getPosition()
   }
 }
 

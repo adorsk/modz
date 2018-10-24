@@ -52,8 +52,8 @@ class Program extends React.Component {
           left: mod.position.x,
           top: mod.position.y,
         }}
-        afterMount={(el) => this.modRefs[mod.key] = el}
-        beforeUnmount={() => delete this.modRefs[mod.key]}
+        afterMount={(el) => { this.modRefs[mod.key] = el }}
+        beforeUnmount={() => { delete this.modRefs[mod.key] }}
       />
     )
   }
@@ -62,7 +62,10 @@ class Program extends React.Component {
     return (
       <svg
         className='wires-container'
-        style={{position: 'absolute'}}
+        style={{
+          position: 'absolute',
+          overflow: 'visible',
+        }}
       >
         {
           _.map(wires, (wire) => {
@@ -77,8 +80,8 @@ class Program extends React.Component {
     return (
       <Wire
         key={wire.key}
-        afterMount={(el) => this.wireRefs[wire.key] = el}
-        beforeUnmount={() => delete this.wireRefs[wire.key]}
+        afterMount={(el) => { this.wireRefs[wire.key] = el }}
+        beforeUnmount={() => { delete this.wireRefs[wire.key] }}
       />
     )
   }
@@ -95,15 +98,9 @@ class Program extends React.Component {
     _.each(this.props.program.wires, (wire) => {
       const { src, dest } = wire
       const srcMod = this.modRefs[src.modKey]
-      const srcHandlePos = srcMod.getIoHandlePosition({
-        ioType: src.ioType,
-        ioKey: src.ioKey
-      })
+      const srcHandlePos = srcMod.getIoHandlePosition({ioKey: src.ioKey})
       const destMod = this.modRefs[dest.modKey]
-      const destHandlePos = destMod.getIoHandlePosition({
-        ioType: dest.ioType,
-        ioKey: dest.ioKey
-      })
+      const destHandlePos = destMod.getIoHandlePosition({ioKey: dest.ioKey})
       const wireRef = this.wireRefs[wire.key]
       wireRef.setPositions({
         src: srcHandlePos,
