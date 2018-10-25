@@ -1,5 +1,4 @@
 import { createStore, applyMiddleware } from "redux"
-import logger from 'redux-logger'
 
 import thunk from "redux-thunk"
 
@@ -9,7 +8,7 @@ export default function configureStore(preloadedState) {
   const store = createStore(
     rootReducer,
     preloadedState,
-    applyMiddleware(thunk, logger)
+    applyMiddleware(thunk)
   )
 
   if(process.env.NODE_ENV !== "production") {
