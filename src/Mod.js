@@ -64,17 +64,21 @@ class Mod extends React.Component {
   renderActionButtons () {
     return (
       <div className='mod-actions'>
-        <button
-          onClick={() => {
-            console.log('clicko')
-            const outputValues = this.modInstance.run() || {}
-            this.props.setOutputValues({outputValues})
-          }}
-        >
+        <button onClick={() => { this.runMod() }}>
           run
         </button>
       </div>
     )
+  }
+
+  runMod () {
+    const outputValues = (
+      this.modInstance.run({
+        inputValues: _.get(this.props.mod, ['inputs', 'values'], {})
+      })
+      || {}
+    )
+    this.props.setOutputValues({outputValues})
   }
 
   renderInputHandles () {
@@ -146,7 +150,13 @@ class Mod extends React.Component {
     )
     if (didImport) {
       this.initializeMod()
+      return
     }
+    const inputValuesPath = ['mod', 'inputs', 'values']
+    const inputValues = _.get(this.props, inputValuesPath)
+    const prevInputValues = _.get(prevProps, inputValuesPath)
+    const inputValuesHaveChanged = (! _.isEqual(inputValues, prevInputValues))
+    if (inputValuesHaveChanged) { this.runMod() }
   }
 
   initializeMod () {

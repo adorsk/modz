@@ -16,31 +16,44 @@ class App extends React.Component {
         <Program
           program={this.props.currentProgram}
           setModOutputValues={this.setModOutputValues.bind(this)}
+          setModInputValues={this.setModInputValues.bind(this)}
         />
       </div>
     )
   }
 
-  setModOutputValues ({mod, outputValues}) {
+  setModOutputValues ({modKey, outputValues}) {
     this._updateMod({
-      mod,
+      modKey,
       updates: {
         outputs: {
-          ...mod.outputs,
+          ...this.props.currentProgram.mods[modKey].outputs,
           values: outputValues,
         }
       }
     })
   }
 
-  _updateMod ({mod, updates}) {
+  setModInputValues ({modKey, inputValues}) {
+    this._updateMod({
+      modKey,
+      updates: {
+        inputs: {
+          ...this.props.currentProgram.mods[modKey].inputs,
+          values: inputValues,
+        }
+      }
+    })
+  }
+
+  _updateMod ({modKey, updates}) {
     this._setState({
       currentProgram: {
         ...this.props.currentProgram,
         mods: {
           ...this.props.currentProgram.mods,
-          [mod.key]: {
-            ...mod,
+          [modKey]: {
+            ...this.props.currentProgram.mods[modKey],
             ...updates
           }
         }
@@ -62,10 +75,13 @@ class App extends React.Component {
       // Basically update mod states as they are loaded.
       // @TODO: split out mod states from program state
       _.each(program.mods, (mod) => {
-        this._updateMod({mod, updates: {status: 'IMPORTING'}})
+        this._updateMod({
+          modKey: mod.key,
+          updates: {status: 'IMPORTING'}
+        })
         this.loadMod({mod}).then(({module}) => {
           this._updateMod({
-            mod,
+            modKey: mod.key,
             updates: {
               module,
               status: 'IMPORTED',
@@ -154,16 +170,21 @@ class App extends React.Component {
         const module = {
           factory: () => {
             class MyMod {
+              constructor () {
+                this.counter = 0
+              }
               renderInto ({parentNode}) {
                 this.parentNode = parentNode
-                this.parentNode.innerHTML = "beef!"
+                this.parentNode.innerHTML = "initialized!"
               }
 
-              run () {
-                console.log("run")
-                const result = new Date()
-                this.parentNode.innerHTML = result
-                return {'output.1': result}
+              run ({inputValues}) {
+                const result = {
+                  counter: this.counter++,
+                  inputValues,
+                }
+                this.parentNode.innerHTML = `RESULT<br>${JSON.stringify(result)}`
+                return {'output.1': this.counter}
               }
             }
             return new MyMod()
