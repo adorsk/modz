@@ -63,7 +63,16 @@ class Mod extends React.Component {
 
   renderActionButtons () {
     return (
-      <div className='mod-actions'>TK: actions</div>
+      <div className='mod-actions'>
+        <button
+          onClick={() => {
+            console.log('clicko')
+            this.modInstance.run()
+          }}
+        >
+          run
+        </button>
+      </div>
     )
   }
 
@@ -138,13 +147,17 @@ class Mod extends React.Component {
   }
 
   initializeMod () {
-    console.log('initializeMod!')
+    // @TODO: clean this up Not sure yet what to call these.
+    // module? factory? renderInto?
     const module = this.props.mod.module
     this.modInstance = module.factory()
     this.modInstance.renderInto({parentNode: this.interfaceContainerRef.current})
   }
 
   componentWillUnmount () {
+    if (this.modInstance && this.modInstance.destroy) {
+      this.modInstance.destroy()
+    }
     if (this.props.beforeUnmount) { this.props.beforeUnmount(this) }
   }
 

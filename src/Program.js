@@ -66,6 +66,8 @@ class Program extends React.Component {
         style={{
           position: 'absolute',
           overflow: 'visible',
+          width: 2,
+          height: 2,
         }}
       >
         {

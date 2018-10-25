@@ -124,14 +124,20 @@ class App extends React.Component {
           factory: () => {
             class MyMod {
               renderInto ({parentNode}) {
-                parentNode.innerHTML = "beef!"
+                this.parentNode = parentNode
+                this.parentNode.innerHTML = "beef!"
+              }
+
+              run () {
+                console.log("run")
+                this.parentNode.innerHTML = new Date()
               }
             }
             return new MyMod()
           },
         }
         resolve({module})
-      }, 1000)
+      }, 300)
     })
     return promise
   }
