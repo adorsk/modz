@@ -8,14 +8,19 @@ class IoHandle extends React.Component {
   }
 
   render () {
-    const { ioDef, ioType } = this.props
+    const { handleDef, ioType, value } = this.props
     const icon = (ioType === 'input') ? '▶' : '◀'
     return (
       <div>
         <span ref={this.handleRef}>
           {icon}
         </span>
-        {JSON.stringify(ioDef)}
+        <div>
+          def: {JSON.stringify(handleDef)}
+        </div>
+        <div>
+          value: {JSON.stringify(value)}
+        </div>
       </div>
     )
   }

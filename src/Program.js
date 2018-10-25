@@ -55,6 +55,9 @@ class Program extends React.Component {
         }}
         afterMount={(el) => { this.modRefs[mod.key] = el }}
         beforeUnmount={() => { delete this.modRefs[mod.key] }}
+        setOutputValues={({outputValues}) => {
+          this.props.setModOutputValues({mod, outputValues})
+        }}
       />
     )
   }

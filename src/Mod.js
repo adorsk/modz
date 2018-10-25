@@ -67,7 +67,8 @@ class Mod extends React.Component {
         <button
           onClick={() => {
             console.log('clicko')
-            this.modInstance.run()
+            const outputValues = this.modInstance.run() || {}
+            this.props.setOutputValues({outputValues})
           }}
         >
           run
@@ -87,11 +88,12 @@ class Mod extends React.Component {
     return (
       <div className={`io-handles ${groupType}-handles`}>
         {
-          _.sortBy(ioDefs, 'position')
-            .map((ioDef) => {
+          _.sortBy(ioDefs.handles, 'position')
+            .map((handleDef) => {
               return this.renderIoHandle({
-                ioDef,
-                ioType: groupType
+                handleDef,
+                ioType: groupType,
+                value: ioDefs.values[handleDef.key],
               })
             })
         }
@@ -99,17 +101,18 @@ class Mod extends React.Component {
     )
   }
 
-  renderIoHandle ({ioDef, ioType}) {
+  renderIoHandle ({handleDef, ioType, value}) {
     return (
       <IoHandle
-        key={ioDef.key}
-        ioDef={ioDef}
+        key={handleDef.key}
+        handleDef={handleDef}
+        value={value}
         ioType={ioType}
         afterMount={(el) => {
-          this.ioHandleRefs[ioDef.key] = el
+          this.ioHandleRefs[handleDef.key] = el
         }}
         beforeUnmount={(el) => {
-          delete this.ioHandleRefs[ioDef.key]
+          delete this.ioHandleRefs[handleDef.key]
         }}
       />
     )
