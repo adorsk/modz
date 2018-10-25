@@ -87,20 +87,31 @@ class App extends React.Component {
       this._setState({currentProgram: program})
       // Basically update mod states as they are loaded.
       // @TODO: split out mod states from program state
-      _.each(program.mods, (mod) => {
-        this.loadMod({mod}).then(({mod}) => {
-          this._setState({
-            currentProgram: {
-              ...this.props.currentProgram,
-              mods: {
-                ...this.props.currentProgram.mods,
-                [mod.key]: {
-                  ...mod,
-                  status: 'IMPORTED'
-                }
+
+      const _updateMod = ({mod, updates}) => {
+        this._setState({
+          currentProgram: {
+            ...this.props.currentProgram,
+            mods: {
+              ...this.props.currentProgram.mods,
+              [mod.key]: {
+                ...mod,
+                ...updates
               }
             }
-          })
+          }
+        })
+      }
+
+      _.each(program.mods, (mod) => {
+        _updateMod({mod, updates: {status: 'IMPORTING'}})
+        this.loadMod({mod}).then(({module}) => {
+          _updateMod({
+            mod,
+            updates: {
+              module,
+              status: 'IMPORTED',
+            }})
         })
       })
     })
@@ -108,7 +119,19 @@ class App extends React.Component {
 
   loadMod ({mod}) {
     const promise = new Promise((resolve, reject) => {
-      setTimeout(() => { resolve({mod}) },  1000)
+      setTimeout(() => {
+        const module = {
+          factory: () => {
+            class MyMod {
+              renderInto ({parentNode}) {
+                parentNode.innerHTML = "beef!"
+              }
+            }
+            return new MyMod()
+          },
+        }
+        resolve({module})
+      }, 1000)
     })
     return promise
   }

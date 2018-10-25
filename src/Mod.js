@@ -7,6 +7,8 @@ class Mod extends React.Component {
   constructor (props) {
     super(props)
     this.ioHandleRefs = {}
+    this.interfaceContainerRef = React.createRef()
+    this.modInstance = null
   }
 
   render () {
@@ -113,14 +115,33 @@ class Mod extends React.Component {
 
   renderModInterface () {
     return (
-      <div className='mod-interface-container'>TK: Mod Interface</div>
+      <div
+        ref={this.interfaceContainerRef}
+        className='mod-interface-container'>
+        TK: Mod Interface
+      </div>
     )
   }
 
   componentDidMount () {
     if (this.props.afterMount) { this.props.afterMount(this) }
-    // call mod's setupInterface method.
-    // init mod? (I think no...bc that's affecting program state)
+  }
+
+  componentDidUpdate (prevProps) {
+    const didImport = (
+      (prevProps.mod.status === 'IMPORTING')
+      && (this.props.mod.status === 'IMPORTED')
+    )
+    if (didImport) {
+      this.initializeMod()
+    }
+  }
+
+  initializeMod () {
+    console.log('initializeMod!')
+    const module = this.props.mod.module
+    this.modInstance = module.factory()
+    this.modInstance.renderInto({parentNode: this.interfaceContainerRef.current})
   }
 
   componentWillUnmount () {
