@@ -14,6 +14,7 @@ class Program extends React.Component {
 
   render () {
     const { program } = this.props
+    if (! program) { return null } 
     return (
       <div>
         <div
@@ -95,6 +96,7 @@ class Program extends React.Component {
   }
 
   updateWires () {
+    if (! this.props.program) { return }
     _.each(this.props.program.wires, (wire) => {
       const { src, dest } = wire
       const srcMod = this.modRefs[src.modKey]
@@ -107,9 +109,6 @@ class Program extends React.Component {
         dest: destHandlePos,
       })
     })
-  }
-
-  getIoHandlePosition () {
   }
 }
 

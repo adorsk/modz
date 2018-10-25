@@ -24,21 +24,31 @@ class Mod extends React.Component {
             border: 'thin solid gray',
           }}
         >
-          {this.renderLabel()}
-          {this.renderBody()}
+          {
+            (mod.status === 'IMPORTED') ?
+              this.renderLoaded()
+              : `STATUS: ${mod.status}`
+          }
         </div>
       </div>
     )
   }
 
+  renderLoaded () {
+    return [
+      this.renderLabel(),
+      this.renderBody(),
+    ]
+  }
+
   renderLabel () {
     const { mod } = this.props
-    return (<label className='mod-name'>{mod.label}</label>)
+    return (<label key="label" className='mod-name'>{mod.label}</label>)
   }
 
   renderBody () {
     return (
-      <div className='mod-body'>
+      <div key="body" className='mod-body'>
         {this.renderActionButtons()}
         <div>
           {this.renderInputHandles()}
@@ -118,6 +128,7 @@ class Mod extends React.Component {
   }
 
   getIoHandlePosition ({ioType, ioKey}) {
+    if (! this.ioHandleRefs[ioKey]) { return null }
     return this.ioHandleRefs[ioKey].getPosition()
   }
 }
