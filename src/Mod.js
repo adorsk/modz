@@ -7,6 +7,7 @@ class Mod extends React.Component {
   constructor (props) {
     super(props)
     this.ioHandleRefs = {}
+    this.labelRef = React.createRef()
     this.interfaceContainerRef = React.createRef()
     this.modInstance = null
   }
@@ -26,7 +27,7 @@ class Mod extends React.Component {
             border: 'thin solid gray',
           }}
         >
-          <label className='mod-name'>{mod.label}</label>
+          <label ref={this.labelRef} className='mod-name'>{mod.label}</label>
           <div key="body" className='mod-body'>
             {this.renderActionButtons()}
             <div>
