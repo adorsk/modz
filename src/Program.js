@@ -48,25 +48,67 @@ class Program extends React.Component {
   renderMod ({mod}) {
     return (
       <Mod
-        key={mod.key}
+        key={mod.id}
         mod={mod}
         style={{
           position: 'absolute',
           left: mod.position.x,
           top: mod.position.y,
         }}
-        afterMount={(el) => { this.modRefs[mod.key] = el }}
-        beforeUnmount={() => { delete this.modRefs[mod.key] }}
+        afterMount={(el) => { this.modRefs[mod.id] = el }}
+        beforeUnmount={() => { delete this.modRefs[mod.id] }}
         setOutputValues={({outputValues}) => {
-          this.props.setModOutputValues({modKey: mod.key, outputValues})
-          // @TODO: fix this. hacky workaround until we break
-          // out mods into their own state, separate from program.
-          setTimeout(() => {
-            this.propagateModOutputValues({modKey: mod.key, outputValues})
-          }, 0)
+          this.setModOutputValues({mod, outputValues})
+          this.propagateModOutputValues({mod, outputValues})
         }}
+        loadModule={this.props.loadModModule}
       />
     )
+  }
+
+  setModOutputValues ({mod, outputValues}) {
+    this._updateMod({
+      mod,
+      updates: {
+        outputs: {
+          ...mod.outputs,
+          values: outputValues,
+        }
+      }
+    })
+  }
+
+  _updateMod ({mod, updates}) {
+    return this.props.updateMod({id: mod.id, updates})
+  }
+
+  propagateModOutputValues ({mod, outputValues}) {
+    const wiresFromMod = this._wiresFromMod[mod.id]
+    _.each(outputValues, (outputValue, ioId) => {
+      const outgoingWires = _.get(wiresFromMod, ioId, [])
+      for (let wire of outgoingWires) {
+        const destMod = this.props.program.mods[wire.dest.modId]
+        this.setModInputValues({
+          mod: destMod,
+          inputValues: {
+            ...destMod.inputs.values,
+            [wire.dest.ioId]: outputValue,
+          }
+        })
+      }
+    })
+  }
+
+  setModInputValues ({mod, inputValues}) {
+    this._updateMod({
+      mod,
+      updates: {
+        inputs: {
+          ...mod.inputs,
+          values: inputValues,
+        }
+      }
+    })
   }
 
   renderWires ({wires}) {
@@ -92,28 +134,11 @@ class Program extends React.Component {
   renderWire ({wire}) {
     return (
       <Wire
-        key={wire.key}
-        afterMount={(el) => { this.wireRefs[wire.key] = el }}
-        beforeUnmount={() => { delete this.wireRefs[wire.key] }}
+        key={wire.id}
+        afterMount={(el) => { this.wireRefs[wire.id] = el }}
+        beforeUnmount={() => { delete this.wireRefs[wire.id] }}
       />
     )
-  }
-
-  propagateModOutputValues ({modKey, outputValues}) {
-    const wiresFromMod = this._wiresFromMod[modKey]
-    _.each(outputValues, (outputValue, ioKey) => {
-      const outgoingWires = _.get(wiresFromMod, ioKey, [])
-      for (let wire of outgoingWires) {
-        const destMod = this.props.program.mods[wire.dest.modKey]
-        this.props.setModInputValues({
-          modKey: destMod.key,
-          inputValues: {
-            ...destMod.inputs.values,
-            [wire.dest.ioKey]: outputValue,
-          }
-        })
-      }
-    })
   }
 
   componentDidMount () {
@@ -132,19 +157,19 @@ class Program extends React.Component {
       const { src, dest } = wire
       _.update(
         this._wiresFromMod,
-        [src.modKey, src.ioKey],
+        [src.modId, src.ioId],
         (_wires) => _wires ? _wires.concat(wire) : [wire]
       )
       _.update(
         this._wiresToMod,
-        [dest.modKey, dest.ioKey],
+        [dest.modId, dest.ioId],
         (_wires) => _wires ? _wires.concat(wire) : [wire]
       )
-      const srcModRef = this.modRefs[src.modKey]
-      const srcHandlePos = srcModRef.getIoHandlePosition({ioKey: src.ioKey})
-      const destModRef = this.modRefs[dest.modKey]
-      const destHandlePos = destModRef.getIoHandlePosition({ioKey: dest.ioKey})
-      const wireRef = this.wireRefs[wire.key]
+      const srcModRef = this.modRefs[src.modId]
+      const srcHandlePos = srcModRef.getIoHandlePosition({ioId: src.ioId})
+      const destModRef = this.modRefs[dest.modId]
+      const destHandlePos = destModRef.getIoHandlePosition({ioId: dest.ioId})
+      const wireRef = this.wireRefs[wire.id]
       wireRef.setPositions({
         src: srcHandlePos,
         dest: destHandlePos,

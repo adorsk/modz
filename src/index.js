@@ -1,7 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Provider} from "react-redux"
-import configureStore from "./store"
+import {Provider} from 'react-redux'
+
+import configureStore from './store.js'
 
 
 const store = configureStore()
@@ -18,11 +19,10 @@ let render = () => {
   )
 }
 
-
-if(module.hot) {
+if (module.hot) {
   const renderApp = render
   const renderError = (error) => {
-    const RedBox = require("redbox-react").default
+    const RedBox = require('redbox-react').default
     ReactDOM.render(
       <RedBox error={error} />,
       rootEl,
@@ -32,8 +32,7 @@ if(module.hot) {
   render = () => {
     try {
       renderApp()
-    }
-    catch(error) {
+    } catch (error) {
       console.error(error)
       renderError(error)
     }

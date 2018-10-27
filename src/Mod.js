@@ -26,36 +26,19 @@ class Mod extends React.Component {
             border: 'thin solid gray',
           }}
         >
-          {
-            (mod.status === 'IMPORTED') ?
-              this.renderLoaded()
-              : `STATUS: ${mod.status}`
-          }
-        </div>
-      </div>
-    )
-  }
-
-  renderLoaded () {
-    return [
-      this.renderLabel(),
-      this.renderBody(),
-    ]
-  }
-
-  renderLabel () {
-    const { mod } = this.props
-    return (<label key="label" className='mod-name'>{mod.label}</label>)
-  }
-
-  renderBody () {
-    return (
-      <div key="body" className='mod-body'>
-        {this.renderActionButtons()}
-        <div>
-          {this.renderInputHandles()}
-          {this.renderModInterface()}
-          {this.renderOutputHandles()}
+          <label className='mod-name'>{mod.label}</label>
+          <div key="body" className='mod-body'>
+            {this.renderActionButtons()}
+            <div>
+              {this.renderInputHandles()}
+              {
+                (mod.importStatus === 'IMPORTED')
+                  ? this.renderModInterface()
+                  : `importStatus: ${mod.importStatus}`
+              }
+              {this.renderOutputHandles()}
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -97,7 +80,7 @@ class Mod extends React.Component {
               return this.renderIoHandle({
                 handleDef,
                 ioType: groupType,
-                value: ioDefs.values[handleDef.key],
+                value: ioDefs.values[handleDef.id],
               })
             })
         }
@@ -108,15 +91,15 @@ class Mod extends React.Component {
   renderIoHandle ({handleDef, ioType, value}) {
     return (
       <IoHandle
-        key={handleDef.key}
+        key={handleDef.id}
         handleDef={handleDef}
         value={value}
         ioType={ioType}
         afterMount={(el) => {
-          this.ioHandleRefs[handleDef.key] = el
+          this.ioHandleRefs[handleDef.id] = el
         }}
         beforeUnmount={(el) => {
-          delete this.ioHandleRefs[handleDef.key]
+          delete this.ioHandleRefs[handleDef.id]
         }}
       />
     )
@@ -140,13 +123,19 @@ class Mod extends React.Component {
   }
 
   componentDidMount () {
+    const { mod } = this.props
+    if (mod) {
+      if (mod.importStatus !== 'IMPORTED') {
+        this.props.loadModule({id: mod.id})
+      }
+    }
     if (this.props.afterMount) { this.props.afterMount(this) }
   }
 
   componentDidUpdate (prevProps) {
     const didImport = (
-      (prevProps.mod.status === 'IMPORTING')
-      && (this.props.mod.status === 'IMPORTED')
+      (prevProps.mod.importStatus === 'IMPORTING')
+      && (this.props.mod.importStatus === 'IMPORTED')
     )
     if (didImport) {
       this.initializeMod()
@@ -160,8 +149,6 @@ class Mod extends React.Component {
   }
 
   initializeMod () {
-    // @TODO: clean this up Not sure yet what to call these.
-    // module? factory? renderInto?
     const module = this.props.mod.module
     this.modInstance = module.factory()
     this.modInstance.renderInto({parentNode: this.interfaceContainerRef.current})
@@ -174,9 +161,9 @@ class Mod extends React.Component {
     if (this.props.beforeUnmount) { this.props.beforeUnmount(this) }
   }
 
-  getIoHandlePosition ({ioType, ioKey}) {
-    if (! this.ioHandleRefs[ioKey]) { return null }
-    return this.ioHandleRefs[ioKey].getPosition()
+  getIoHandlePosition ({ioType, ioId}) {
+    if (! this.ioHandleRefs[ioId]) { return null }
+    return this.ioHandleRefs[ioId].getPosition()
   }
 }
 
