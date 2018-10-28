@@ -24,10 +24,26 @@ class Mod extends React.Component {
           style={{
             width: mod.dimensions.width,
             height: mod.dimensions.height,
+            borderRadius: 2,
             border: 'thin solid gray',
+            padding: 2,
           }}
         >
-          <label ref={this.labelRef} className='mod-name'>{mod.label}</label>
+          <label
+            ref={this.labelRef}
+            className='mod-name'
+            style={{
+              display: 'block',
+              cursor: 'pointer',
+              backgroundColor: 'rgba(0, 0, 0, .05)',
+              padding: 2,
+              borderRadius: 2,
+              border: 'thin solid gray',
+              textAlign: 'center',
+            }}
+          >
+            {mod.label}
+          </label>
           <div key="body" className='mod-body'>
             {this.renderActionButtons()}
             <div>
