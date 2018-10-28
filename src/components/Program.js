@@ -1,5 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
+import interact from 'interactjs'
 
 import Mod from './Mod.js'
 import Wire from './Wire.js'
@@ -55,7 +56,25 @@ class Program extends React.Component {
           left: mod.position.x,
           top: mod.position.y,
         }}
-        afterMount={(el) => { this.modRefs[mod.id] = el }}
+        afterMount={(el) => {
+          this.modRefs[mod.id] = el 
+          interact(el.labelRef.current).draggable({
+            restrict: false,
+            autoScroll: true,
+            onmove: (dragEvent) => {
+              const _mod = this.props.program.mods[mod.id] // closures!
+              this._updateMod({
+                mod: _mod,
+                updates: {
+                  position: {
+                    x: _mod.position.x + dragEvent.dx,
+                    y: _mod.position.y + dragEvent.dy
+                  }
+                }
+              })
+            },
+          })
+        }}
         beforeUnmount={() => { delete this.modRefs[mod.id] }}
         setOutputValues={({outputValues}) => {
           this.setModOutputValues({mod, outputValues})
