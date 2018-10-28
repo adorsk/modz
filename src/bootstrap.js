@@ -25,8 +25,8 @@ export function generateInitialOrmState ({orm}) {
     outputs: {
       values: {},
       handles: {
-        'output.1': {
-          id: 'output.1',
+        'outputs.1': {
+          id: 'outputs.1',
           position: 0,
         }
       }
@@ -38,7 +38,7 @@ export function generateInitialOrmState ({orm}) {
     label: 'mod.2.label',
     position: {
       x: 300,
-      y: 300,
+      y: 55,
     },
     dimensions: {
       width: 150,
@@ -47,10 +47,18 @@ export function generateInitialOrmState ({orm}) {
     inputs: {
       values: {},
       handles: {
-        'input.1': {
-          id: 'input.1',
+        'inputs.1': {
+          id: 'inputs.1',
           position: 0,
-        }
+        },
+        'inputs.2': {
+          id: 'inputs.2',
+          position: 1,
+        },
+        'inputs.3': {
+          id: 'inputs.3',
+          position: 2,
+        },
       }
     },
     outputs: {
@@ -64,13 +72,13 @@ export function generateInitialOrmState ({orm}) {
     program,
     src: {
       modId: 'mod.1',
-      ioType: 'output',
-      ioId: 'output.1',
+      ioType: 'outputs',
+      ioId: 'outputs.1',
     },
     dest: {
       modId: 'mod.2',
-      ioType: 'input',
-      ioId: 'input.1',
+      ioType: 'inputs',
+      ioId: 'inputs.1',
     }
   })
 

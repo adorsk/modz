@@ -43,7 +43,7 @@ actions.mod = {
                     inputValues,
                   }
                   this.parentNode.innerHTML = `RESULT<br>${JSON.stringify(result)}`
-                  return {'output.1': this.counter}
+                  return {'outputs.1': this.counter}
                 }
               }
               return new MyMod()
@@ -68,7 +68,11 @@ actions.mod = {
       })
     }
     return thunk
-  }
+  },
+  updateIoValues: ({id, ioType, updates}) => ({
+    type: actionTypes.mod.updateIoValues,
+    payload: {id, ioType, updates}
+  }),
 }
 
 actions.wire = {

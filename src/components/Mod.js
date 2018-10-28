@@ -142,7 +142,9 @@ class Mod extends React.Component {
   componentDidMount () {
     const { mod } = this.props
     if (mod) {
-      if (mod.importStatus !== 'IMPORTED') {
+      if (mod.importStatus === 'IMPORTED') {
+        this.initializeMod()
+      } else {
         this.props.loadModule({id: mod.id})
       }
     }

@@ -22,6 +22,12 @@ class App extends React.Component {
           loadModModule={(...args) => {
             return this.props.dispatch(actions.mod.loadModule(...args))
           }}
+          addWire={(...args) => {
+            return this.props.dispatch(actions.wire.create(...args))
+          }}
+          updateModIoValues={(...args) => {
+            return this.props.dispatch(actions.mod.updateIoValues(...args))
+          }}
         />
       </div>
     )

@@ -15,12 +15,7 @@ class IoHandle extends React.Component {
         <span ref={this.handleRef}>
           {icon}
         </span>
-        <div>
-          def: {JSON.stringify(handleDef)}
-        </div>
-        <div>
-          value: {JSON.stringify(value)}
-        </div>
+        <label>{handleDef.id} [value: {JSON.stringify(value)}]</label>
       </div>
     )
   }

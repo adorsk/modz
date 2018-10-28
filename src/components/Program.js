@@ -4,6 +4,7 @@ import interact from 'interactjs'
 
 import Mod from './Mod.js'
 import Wire from './Wire.js'
+import AddWireForm from './AddWireForm.js'
 
 
 class Program extends React.Component {
@@ -19,9 +20,12 @@ class Program extends React.Component {
     const { program } = this.props
     if (! program) { return null } 
     return (
-      <div>
+      <div className='program'>
+        <div>
+          {this._renderAddWireForm()}
+        </div>
         <div
-          className='program-container'
+          className='program-content-container'
           style={{position: 'relative'}}
         >
           {this.renderMods({mods: program.mods})}
@@ -29,6 +33,40 @@ class Program extends React.Component {
         </div>
       </div>
     )
+  }
+
+  _renderAddWireForm () {
+    return (
+      <AddWireForm
+        ioHandleInfos={this._getIoHandleInfos()}
+        addWire={this._addWire.bind(this)}
+      />
+    )
+  }
+
+  _getIoHandleInfos () {
+    const { program } = this.props
+    const ioTypes = ['inputs', 'outputs']
+    const ioHandleInfos = {}
+    _.each(program.mods, (mod, modId) => {
+      for (let ioType of ioTypes) {
+        _.each(mod[ioType].handles, (handle, handleId) => {
+          const infoId = [modId, ioType, handleId].join(':')
+          ioHandleInfos[infoId] = {
+            id: infoId,
+            modId,
+            ioType,
+            handle
+          }
+        })
+      }
+    })
+    return ioHandleInfos
+  }
+
+  _addWire ({src, dest}) {
+    const { program } = this.props
+    this.props.addWire({props: {program, src, dest}})
   }
 
   renderMods ({mods}) {
@@ -86,14 +124,10 @@ class Program extends React.Component {
   }
 
   setModOutputValues ({mod, outputValues}) {
-    this._updateMod({
-      mod,
-      updates: {
-        outputs: {
-          ...mod.outputs,
-          values: outputValues,
-        }
-      }
+    this.props.updateModIoValues({
+      id: mod.id,
+      ioType: 'outputs',
+      updates: outputValues
     })
   }
 
@@ -102,31 +136,38 @@ class Program extends React.Component {
   }
 
   propagateModOutputValues ({mod, outputValues}) {
-    const wiresFromMod = this._wiresFromMod[mod.id]
-    _.each(outputValues, (outputValue, ioId) => {
-      const outgoingWires = _.get(wiresFromMod, ioId, [])
-      for (let wire of outgoingWires) {
-        const destMod = this.props.program.mods[wire.dest.modId]
-        this.setModInputValues({
-          mod: destMod,
-          inputValues: {
-            ...destMod.inputs.values,
-            [wire.dest.ioId]: outputValue,
-          }
-        })
-      }
+    _.each(
+      _.values(this._wiresFromMod[mod.id]),
+      (wire) => this._propagateOutputForWire({
+        wire,
+        value: outputValues[wire.src.ioId]
+      })
+    )
+  }
+
+  _propagateOutputForWire (opts) {
+    const { wire } = opts
+    const { program } = this.props
+    const { src, dest } = wire
+    let srcValue
+    if (_.has(opts, 'value')) {
+      srcValue = opts.value
+    } else {
+      const srcMod = program.mods[src.modId]
+      srcValue = srcMod[src.ioType].values[src.ioId]
+    }
+    this.props.updateModIoValues({
+      id: dest.modId,
+      ioType: dest.ioType,
+      updates: {[dest.ioId]: srcValue}
     })
   }
 
   setModInputValues ({mod, inputValues}) {
-    this._updateMod({
-      mod,
-      updates: {
-        inputs: {
-          ...mod.inputs,
-          values: inputValues,
-        }
-      }
+    this.props.updateModIoValues({
+      id: mod.id,
+      ioType: 'inputs',
+      updates: inputValues
     })
   }
 
@@ -161,29 +202,30 @@ class Program extends React.Component {
   }
 
   componentDidMount () {
-    this.updateWires()
+    this._updateWires()
   }
 
-  componentDidUpdate () {
-    this.updateWires()
+  componentDidUpdate (prevProps) {
+    this._updateWires()
+    const wireDiff = this._computeWireDiff({prevProps})
+    this._propagateOutputsForWires({wires: wireDiff.added})
   }
 
-  updateWires () {
+  _updateWires () {
     if (! this.props.program) { return }
-    this._wiresFromMod = {}
-    this._wiresToMod = {}
+    this._updateWireRegistry()
+    this._updateWirePaths()
+  }
+
+  _updateWireRegistry () {
+    const wires = this.props.program.wires
+    this._wiresFromMod = _.groupBy(wires, _.property(['src', 'modId']))
+    this._wiresToMod = _.groupBy(wires, _.property(['dest', 'modId']))
+  }
+
+  _updateWirePaths () {
     _.each(this.props.program.wires, (wire) => {
       const { src, dest } = wire
-      _.update(
-        this._wiresFromMod,
-        [src.modId, src.ioId],
-        (_wires) => _wires ? _wires.concat(wire) : [wire]
-      )
-      _.update(
-        this._wiresToMod,
-        [dest.modId, dest.ioId],
-        (_wires) => _wires ? _wires.concat(wire) : [wire]
-      )
       const srcModRef = this.modRefs[src.modId]
       const srcHandlePos = srcModRef.getIoHandlePosition({ioId: src.ioId})
       const destModRef = this.modRefs[dest.modId]
@@ -194,6 +236,20 @@ class Program extends React.Component {
         dest: destHandlePos,
       })
     })
+  }
+
+  _computeWireDiff ({prevProps}) {
+    const _getWires = _.property(['program', 'wires'])
+    const prevWires = _getWires(prevProps)
+    const currentWires = _getWires(this.props)
+    return {
+      added: _.omit(currentWires, _.keys(prevWires)),
+      removed: _.omit(prevWires, _.keys(currentWires)),
+    }
+  }
+
+  _propagateOutputsForWires ({wires}) {
+    _.each(wires, (wire) => this._propagateOutputForWire({wire}))
   }
 }
 

@@ -17,7 +17,7 @@ actionTypes.program = _generatePrefixedActionTypes({
 
 actionTypes.mod = _generatePrefixedActionTypes({
   prefix: 'mod',
-  actionTypes: crudActionTypes,
+  actionTypes: [...crudActionTypes, 'updateIoValues'],
 })
 
 actionTypes.wire = _generatePrefixedActionTypes({
