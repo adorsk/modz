@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import logger from 'redux-logger'
 
 import rootReducer from './reducers.js'
-import { orm } from './models.js'
+import { orm } from './orm.js'
 import { generateInitialOrmState } from './bootstrap.js'
 
 export default function configureStore(preloadedState) {

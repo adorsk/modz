@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { createSelector } from 'reselect'
 import { createSelector as ormCreateSelector } from 'redux-orm'
 
-import { orm } from './models.js'
+import { orm } from './orm.js'
 
 const ormSelector = state => state.orm
 

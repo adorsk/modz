@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import selectors from './selectors.js'
 import actions from './actions.js'
-import Program from './Program.js'
+import Program from './components/Program.js'
 
 
 class App extends React.Component {
